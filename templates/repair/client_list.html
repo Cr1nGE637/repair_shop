@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+
+{% block title %}Список клиентов - Ремонтная мастерская{% endblock %}
+
+{% block content %}
+<h1>Список клиентов</h1>
+
+<form method="get" class="search-form">
+    <input type="text" name="search" placeholder="Поиск по имени, телефону, email..." value="{{ search_query }}">
+    <button type="submit" class="btn">Поиск</button>
+    <a href="{% url 'repair:client_list' %}" class="btn">Сбросить</a>
+</form>
+
+{% if clients %}
+<table>
+    <thead>
+        <tr>
+            <th>ФИО</th>
+            <th>Телефон</th>
+            <th>Email</th>
+            <th>Количество техники</th>
+            <th>Дата регистрации</th>
+            <th>Действия</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for client in clients %}
+        <tr>
+            <td>{{ client.full_name }}</td>
+            <td>{{ client.phone }}</td>
+            <td>{{ client.email|default:"—" }}</td>
+            <td>{{ client.devices.count }}</td>
+            <td>{{ client.created_at|date:"d.m.Y" }}</td>
+            <td>
+                <a href="/admin/repair/client/{{ client.id }}/change/" class="btn">Редактировать</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p>Клиенты не найдены.</p>
+{% endif %}
+
+<div style="margin-top: 1rem;">
+    <a href="/admin/repair/client/add/" class="btn">➕ Добавить нового клиента</a>
+</div>
+{% endblock %}
+

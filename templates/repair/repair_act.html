@@ -1,0 +1,175 @@
+{% extends 'base.html' %}
+
+{% block title %}Акт #{{ act.act_number }} - Ремонтная мастерская{% endblock %}
+
+{% block content %}
+<div style="text-align: center; margin-bottom: 2rem;">
+    <h1>АКТ ВЫПОЛНЕННЫХ РАБОТ</h1>
+    <p>№ {{ act.act_number }}</p>
+    <p>от {{ act.created_at|date:"d" }} {{ act.created_at|date:"F"|lower }} {{ act.created_at|date:"Y" }} г.</p>
+</div>
+
+<div style="margin-bottom: 2rem;">
+    <h2>1. Информация о клиенте</h2>
+    <table>
+        <tr>
+            <th>ФИО</th>
+            <td>{{ repair.device.client.full_name }}</td>
+        </tr>
+        <tr>
+            <th>Телефон</th>
+            <td>{{ repair.device.client.phone }}</td>
+        </tr>
+        {% if repair.device.client.email %}
+        <tr>
+            <th>Email</th>
+            <td>{{ repair.device.client.email }}</td>
+        </tr>
+        {% endif %}
+        {% if repair.device.client.address %}
+        <tr>
+            <th>Адрес</th>
+            <td>{{ repair.device.client.address }}</td>
+        </tr>
+        {% endif %}
+    </table>
+</div>
+
+<div style="margin-bottom: 2rem;">
+    <h2>2. Информация о технике</h2>
+    <table>
+        <tr>
+            <th>Тип техники</th>
+            <td>{{ repair.device.get_device_type_display }}</td>
+        </tr>
+        <tr>
+            <th>Бренд</th>
+            <td>{{ repair.device.brand }}</td>
+        </tr>
+        <tr>
+            <th>Модель</th>
+            <td>{{ repair.device.model }}</td>
+        </tr>
+        {% if repair.device.serial_number %}
+        <tr>
+            <th>Серийный номер</th>
+            <td>{{ repair.device.serial_number }}</td>
+        </tr>
+        {% endif %}
+        <tr>
+            <th>Описание проблемы</th>
+            <td>{{ repair.problem_description }}</td>
+        </tr>
+    </table>
+</div>
+
+<div style="margin-bottom: 2rem;">
+    <h2>3. Выполненные работы</h2>
+    {% if works %}
+    <table>
+        <thead>
+            <tr>
+                <th>№</th>
+                <th>Наименование работы</th>
+                <th>Количество</th>
+                <th>Цена за единицу, руб.</th>
+                <th>Стоимость, руб.</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for work in works %}
+            <tr>
+                <td>{{ forloop.counter }}</td>
+                <td>{{ work.work_type.name }}</td>
+                <td>{{ work.quantity }}</td>
+                <td>{{ work.unit_price }}</td>
+                <td>{{ work.cost }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p>Работы не указаны.</p>
+    {% endif %}
+</div>
+
+<div style="margin-bottom: 2rem;">
+    <h2>4. Использованные материалы и компоненты</h2>
+    {% if components %}
+    <table>
+        <thead>
+            <tr>
+                <th>№</th>
+                <th>Наименование</th>
+                <th>Количество</th>
+                <th>Цена за единицу, руб.</th>
+                <th>Стоимость, руб.</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for comp in components %}
+            <tr>
+                <td>{{ forloop.counter }}</td>
+                <td>{{ comp.component.name }}</td>
+                <td>{{ comp.quantity }}</td>
+                <td>{{ comp.unit_price }}</td>
+                <td>{{ comp.total_cost }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p>Материалы и компоненты не использовались.</p>
+    {% endif %}
+</div>
+
+<div style="margin-bottom: 2rem; padding: 1rem; background-color: #f8f9fa; border-radius: 4px;">
+    <h2>5. Итого</h2>
+    <p style="font-size: 1.5rem; font-weight: bold;">Общая стоимость: {{ repair.total_cost }} руб.</p>
+</div>
+
+{% if act.notes %}
+<div style="margin-bottom: 2rem;">
+    <h2>6. Примечания</h2>
+    <p>{{ act.notes }}</p>
+</div>
+{% endif %}
+
+<div style="margin-top: 3rem; display: flex; justify-content: space-between;">
+    <div>
+        <p><strong>Исполнитель:</strong></p>
+        <p>{{ repair.created_by.get_full_name|default:repair.created_by.username }}</p>
+        <p style="margin-top: 3rem;">_________________</p>
+    </div>
+    <div>
+        <p><strong>Заказчик:</strong></p>
+        <p>{{ repair.device.client.full_name }}</p>
+        <p style="margin-top: 3rem;">_________________</p>
+    </div>
+</div>
+
+<div style="margin-top: 2rem; text-align: center;">
+    <button onclick="window.print()" class="btn">🖨️ Печать</button>
+    <a href="{% url 'repair:repair_detail' repair.id %}" class="btn">← Назад</a>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    @media print {
+        .header, .footer, button, .btn {
+            display: none;
+        }
+        .container {
+            max-width: 100%;
+            margin: 0;
+            padding: 0;
+        }
+        .content {
+            box-shadow: none;
+            padding: 0;
+        }
+    }
+</style>
+{% endblock %}
+

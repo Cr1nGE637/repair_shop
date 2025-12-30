@@ -1,0 +1,147 @@
+{% extends 'base.html' %}
+
+{% block title %}Ремонт #{{ repair.id }} - Ремонтная мастерская{% endblock %}
+
+{% block content %}
+<h1>Ремонт #{{ repair.id }}</h1>
+
+<div style="display: flex; gap: 1rem; margin: 1rem 0;">
+    <a href="{% url 'repair:repair_list' %}" class="btn">← Назад к списку</a>
+    <a href="/admin/repair/repair/{{ repair.id }}/change/" class="btn">✏️ Редактировать</a>
+    {% if repair.status == 'ready' or repair.status == 'completed' %}
+    <a href="{% url 'repair:repair_act' repair.id %}" class="btn btn-success">📄 Акт выполненных работ</a>
+    {% endif %}
+</div>
+
+<h2>Информация о ремонте</h2>
+<table>
+    <tr>
+        <th>Техника</th>
+        <td>{{ repair.device }}</td>
+    </tr>
+    <tr>
+        <th>Клиент</th>
+        <td>{{ repair.device.client.full_name }}</td>
+    </tr>
+    <tr>
+        <th>Телефон</th>
+        <td>{{ repair.device.client.phone }}</td>
+    </tr>
+    <tr>
+        <th>Статус</th>
+        <td>
+            <span class="status-badge status-{{ repair.status }}">
+                {{ repair.get_status_display }}
+            </span>
+        </td>
+    </tr>
+    <tr>
+        <th>Проблема (со слов клиента)</th>
+        <td>{{ repair.problem_description }}</td>
+    </tr>
+    <tr>
+        <th>Дата приема</th>
+        <td>{{ repair.accepted_at|date:"d.m.Y H:i" }}</td>
+    </tr>
+    {% if repair.started_at %}
+    <tr>
+        <th>Дата начала работ</th>
+        <td>{{ repair.started_at|date:"d.m.Y H:i" }}</td>
+    </tr>
+    {% endif %}
+    {% if repair.completed_at %}
+    <tr>
+        <th>Дата завершения</th>
+        <td>{{ repair.completed_at|date:"d.m.Y H:i" }}</td>
+    </tr>
+    {% endif %}
+    {% if repair.issued_at %}
+    <tr>
+        <th>Дата выдачи</th>
+        <td>{{ repair.issued_at|date:"d.m.Y H:i" }}</td>
+    </tr>
+    {% endif %}
+    <tr>
+        <th>Мастер</th>
+        <td>{{ repair.created_by.get_full_name|default:repair.created_by.username }}</td>
+    </tr>
+    {% if repair.master_notes %}
+    <tr>
+        <th>Заметки мастера</th>
+        <td>{{ repair.master_notes }}</td>
+    </tr>
+    {% endif %}
+</table>
+
+<h2 style="margin-top: 2rem;">Выполненные работы</h2>
+{% if works %}
+<table>
+    <thead>
+        <tr>
+            <th>Вид работы</th>
+            <th>Количество</th>
+            <th>Цена за единицу</th>
+            <th>Стоимость</th>
+            {% if works.0.notes %}
+            <th>Примечания</th>
+            {% endif %}
+        </tr>
+    </thead>
+    <tbody>
+        {% for work in works %}
+        <tr>
+            <td>{{ work.work_type.name }}</td>
+            <td>{{ work.quantity }}</td>
+            <td>{{ work.unit_price }} руб.</td>
+            <td><strong>{{ work.cost }} руб.</strong></td>
+            {% if work.notes %}
+            <td>{{ work.notes }}</td>
+            {% endif %}
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p>Работы не указаны.</p>
+{% endif %}
+
+<h2 style="margin-top: 2rem;">Использованные компоненты</h2>
+{% if components %}
+<table>
+    <thead>
+        <tr>
+            <th>Компонент</th>
+            <th>Количество</th>
+            <th>Цена за единицу</th>
+            <th>Общая стоимость</th>
+            <th>Источник</th>
+            {% if components.0.notes %}
+            <th>Примечания</th>
+            {% endif %}
+        </tr>
+    </thead>
+    <tbody>
+        {% for comp in components %}
+        <tr>
+            <td>{{ comp.component.name }}</td>
+            <td>{{ comp.quantity }}</td>
+            <td>{{ comp.unit_price }} руб.</td>
+            <td><strong>{{ comp.total_cost }} руб.</strong></td>
+            <td>{% if comp.was_purchased %}Закуплен{% else %}Со склада{% endif %}</td>
+            {% if comp.notes %}
+            <td>{{ comp.notes }}</td>
+            {% endif %}
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p>Компоненты не использовались.</p>
+{% endif %}
+
+<div style="margin-top: 2rem; padding: 1rem; background-color: #f8f9fa; border-radius: 4px;">
+    <h3 style="margin-bottom: 0.5rem;">Общая стоимость ремонта:</h3>
+    <p style="font-size: 1.5rem; font-weight: bold; color: #27ae60;">{{ repair.total_cost }} руб.</p>
+</div>
+{% endblock %}
+
